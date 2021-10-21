@@ -4,6 +4,7 @@
 const express = require("express");
 const mysql = require("mysql");
 const dotenv = require("dotenv");
+const nodemailer = require("nodemailer");
 const path = require("path");
 
 dotenv.config({ path: "./.env" });
@@ -59,4 +60,38 @@ app.use("/auth", require("./routes/auth"));
 
 app.listen(3304, () => {
   console.log("Server started on Port 3304");
+});
+
+const transporter = nodemailer.createTransport({
+  host: "email-smtp.us-west-1.amazonaws.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "AKIAYHESLC3COYTGLHFV",
+    pass: "BPZUB89ZtW44J0c1yyc7g4NiYQAs/5W3679y5ShpQTVX",
+  },
+});
+
+// verify connection configuration
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("Server is ready to take our messages");
+  }
+});
+
+const options = {
+  from: "abui27@ucmerced.edu",
+  to: "abui27@ucmerced.edu",
+  subject: "Nodemailer test",
+  text: "If you got this, it was successfull :D",
+};
+
+transporter.sendMail(options, function (err, info) {
+  if (err) {
+    console.log(err);
+    return;
+  }
+  console.log("Sent: " + info.response);
 });
