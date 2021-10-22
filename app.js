@@ -63,12 +63,12 @@ app.listen(3304, () => {
 });
 
 const transporter = nodemailer.createTransport({
-  host: "email-smtp.us-west-1.amazonaws.com",
-  port: 465,
-  secure: true,
+  host: process.env.SES_HOST,
+  port: process.env.SES_PORT,
+  secure: process.env.SES_SECURE,
   auth: {
-    user: "AKIAYHESLC3COYTGLHFV",
-    pass: "BPZUB89ZtW44J0c1yyc7g4NiYQAs/5W3679y5ShpQTVX",
+    user: process.env.SES_USER,
+    pass: process.env.SES_PASS,
   },
 });
 
@@ -82,8 +82,8 @@ transporter.verify(function (error, success) {
 });
 
 const options = {
-  from: "abui27@ucmerced.edu",
-  to: "abui27@ucmerced.edu",
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
   subject: "Nodemailer test",
   text: "If you got this, it was successfull :D",
 };
