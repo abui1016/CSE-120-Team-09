@@ -4,7 +4,7 @@
 const express = require("express");
 const mysql = require("mysql");
 const dotenv = require("dotenv");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 const path = require("path");
 
 dotenv.config({ path: "./.env" });
@@ -62,36 +62,39 @@ app.listen(3304, () => {
   console.log("Server started on Port 3304");
 });
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SES_HOST,
-  port: process.env.SES_PORT,
-  secure: process.env.SES_SECURE,
-  auth: {
-    user: process.env.SES_USER,
-    pass: process.env.SES_PASS,
-  },
-});
+// EMAIL SERVICE
+// const transporter = nodemailer.createTransport({
+//   host: process.env.SES_HOST,
+//   port: process.env.SES_PORT,
+//   secure: process.env.SES_SECURE,
+//   auth: {
+//     user: process.env.SES_USER,
+//     pass: process.env.SES_PASS,
+//   },
+// });
 
-// verify connection configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Server is ready to take our messages");
-  }
-});
+// // verify connection configuration
+// transporter.verify(function (error, success) {
+//   if (error) {
+//     console.log(error);
+//   } else {
+//     console.log("Server is ready to take our messages");
+//   }
+// });
 
-const options = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer test",
-  text: "If you got this, it was successfull :D",
-};
+// const options = {
+//   from: process.env.SES_FROM,
+//   to: process.env.SES_TO,
+//   subject: "Nodemailer test",
+//   text: "If you got this, it was successfull :D",
+// };
 
-transporter.sendMail(options, function (err, info) {
-  if (err) {
-    console.log(err);
-    return;
-  }
-  console.log("Sent: " + info.response);
-});
+// function sendMail() {
+//   transporter.sendMail(options, function (err, info) {
+//     if (err) {
+//       console.log(err);
+//       return;
+//     }
+//     console.log("Sent: " + info.response);
+//   });
+// }
