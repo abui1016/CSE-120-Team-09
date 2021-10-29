@@ -95,7 +95,8 @@ exports.register = (req, res) => {
   //   const password = req.body.password;
   //   const passwordConfirm = req.body.passwordConfirm;
 
-  const { name, email, password, passwordConfirm } = req.body;
+  const { name, email, phoneNumber, password, passwordConfirm, skillLevel } =
+    req.body;
 
   // Query into database
   // for bcrypt -> add 'async' in front of (error, results)
@@ -124,7 +125,9 @@ exports.register = (req, res) => {
         {
           name: name,
           email: email,
+          phoneNumber: phoneNumber,
           password: password,
+          skillLevel: skillLevel,
         },
         (error, results) => {
           if (error) {
