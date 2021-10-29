@@ -37,11 +37,11 @@ const optionsRegister = {
   to: process.env.SES_TO,
   subject: "Nodemailer Registration",
   text: "A user has successfully signed up!",
-  // attachments: [
-  //   {
-  //     path: "directory/filename",
-  //   },
-  // ],
+  attachments: [
+    {
+      path: "directory/filename",
+    },
+  ],
 };
 
 const optionsLogin = {
