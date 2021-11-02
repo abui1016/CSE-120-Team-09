@@ -11,7 +11,6 @@ var myDate = new Date();
         var myTime = hours + " " + ampm + " : " + minutes;
         return myTime;
 }
-
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
@@ -50,7 +49,7 @@ const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "Nodemailer Registration",
-  text: "A user has successfully signed up at" + getTime() +"!",
+  text: "A user has successfully signed up at " + getTime() +"!",
   // attachments: [
   //   {
   //     path: "directory/filename",
@@ -119,24 +118,31 @@ exports.register = (req, res) => {
   //   const password = req.body.password;
   //   const passwordConfirm = req.body.passwordConfirm;
 
-  const { name, email, phoneNumber, password, passwordConfirm, skillLevel } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    password,
+    passwordConfirm,
+    skillLevel,
+  } = req.body;
 
   // Query into database
   // for bcrypt -> add 'async' in front of (error, results)
   db.query(
-    "SELECT email FROM users WHERE email = ?",
-    [email],
+    "SELECT emailAddress FROM users WHERE emailAddress = ?",
+    [emailAddress],
     (error, results) => {
       if (error) {
         console.log(error);
       }
       if (results.length > 0) {
-        return res.render("register", {
+        return res.render("register2", {
           message: "That email is already in use",
         });
       } else if (password !== passwordConfirm) {
-        return res.render("register", {
+        return res.render("register2", {
           message: "Passwords do not match",
         });
       }
@@ -147,8 +153,9 @@ exports.register = (req, res) => {
       db.query(
         "INSERT INTO users SET ?",
         {
-          name: name,
-          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          emailAddress: emailAddress,
           phoneNumber: phoneNumber,
           password: password,
           skillLevel: skillLevel,
@@ -159,7 +166,7 @@ exports.register = (req, res) => {
           } else {
             console.log(results);
             sendMailRegister();
-            return res.render("register", {
+            return res.render("register2", {
               message: "User registered!",
             });
           }
@@ -171,13 +178,13 @@ exports.register = (req, res) => {
 
 // Login user
 exports.login = (req, res) => {
-  const { email, password } = req.body;
+  const { emailAddress, password } = req.body;
 
   // Query DB to match an email and password
   // If there is no match -> invalid login
   db.query(
-    "SELECT email, password FROM users WHERE email = ? AND password = ?",
-    [email, password],
+    "SELECT emailAddress, password FROM users WHERE emailAdress = ? AND password = ?",
+    [emailAddress, password],
     (error, results) => {
       if (error) {
         console.log(error);
