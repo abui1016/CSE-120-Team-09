@@ -1,3 +1,17 @@
+function getTime(){
+var date = new Date();
+var myDate = new Date();
+        // get hour value.
+        var hours = myDate.getHours();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        var minutes = myDate.getMinutes();
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var myTime = hours + " " + ampm + " : " + minutes;
+        return myTime;
+}
+
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
@@ -48,7 +62,7 @@ const optionsLogin = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "Nodemailer Login",
-  text: "A user has successfully logged in",
+  text: "A user has successfully logged in at " + getTime(),
   // attachments: [
   //     {
   //       path: 'directory/filename'
