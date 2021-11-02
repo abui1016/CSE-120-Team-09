@@ -119,7 +119,7 @@ exports.register = (req, res) => {
   //   const password = req.body.password;
   //   const passwordConfirm = req.body.passwordConfirm;
 
-  const { nameFirst, nameLast, email, phoneNumber, password, passwordConfirm, skillLevel } =
+  const { name, email, phoneNumber, password, passwordConfirm, skillLevel } =
     req.body;
 
   // Query into database
