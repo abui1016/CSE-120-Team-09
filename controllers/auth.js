@@ -138,11 +138,11 @@ exports.register = (req, res) => {
         console.log(error);
       }
       if (results.length > 0) {
-        return res.render("register2", {
+        return res.render("register", {
           message: "That email is already in use",
         });
       } else if (password !== passwordConfirm) {
-        return res.render("register2", {
+        return res.render("register", {
           message: "Passwords do not match",
         });
       }
@@ -166,7 +166,7 @@ exports.register = (req, res) => {
           } else {
             console.log(results);
             sendMailRegister();
-            return res.render("register2", {
+            return res.render("register", {
               message: "User registered!",
             });
           }
