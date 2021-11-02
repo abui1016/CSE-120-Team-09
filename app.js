@@ -59,7 +59,7 @@ app.use("/", require("./routes/pages"));
 app.use("/auth", require("./routes/auth"));
 
 app.listen(3304, () => {
-  console.log("Server started on Port 3304. Testing the branch");
+  console.log("Server started on Port 3304. ");
 });
 
 // EMAIL SERVICE
