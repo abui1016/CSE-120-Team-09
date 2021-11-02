@@ -50,7 +50,7 @@ const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "Nodemailer Registration",
-  text: "A user has successfully signed up!",
+  text: "A user has successfully signed up at" + getTime() +"!",
   // attachments: [
   //   {
   //     path: "directory/filename",
@@ -119,7 +119,7 @@ exports.register = (req, res) => {
   //   const password = req.body.password;
   //   const passwordConfirm = req.body.passwordConfirm;
 
-  const { name, email, phoneNumber, password, passwordConfirm, skillLevel } =
+  const { nameFirst, nameLast, email, phoneNumber, password, passwordConfirm, skillLevel } =
     req.body;
 
   // Query into database
