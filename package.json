@@ -1,7 +1,8 @@
 {
   "name": "NODE-MYSQL",
   "engines": {
-    "node": "15.0.1"
+    "npm": "8.1.0",
+    "node": "16.13.0"
   },
   "version": "1.0.0",
   "description": "",
