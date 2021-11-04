@@ -1,3 +1,5 @@
+// gets time for the timestamps. 
+
 function getTime(){
 var date = new Date();
 var myDate = new Date();
@@ -11,6 +13,7 @@ var myDate = new Date();
         var myTime = hours + " " + ampm + " : " + minutes;
         return myTime;
 }
+
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
@@ -183,7 +186,7 @@ exports.login = (req, res) => {
   // Query DB to match an email and password
   // If there is no match -> invalid login
   db.query(
-    "SELECT emailAddress, password FROM users WHERE emailAdress = ? AND password = ?",
+    "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
     [emailAddress, password],
     (error, results) => {
       if (error) {
