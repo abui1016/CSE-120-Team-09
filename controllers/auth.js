@@ -194,11 +194,11 @@ exports.login = (req, res) => {
       }
       if (results.length === 1) {
         sendMailLogin();
-        return res.render("login", {
+        return res.render("edit", {
           message: "Successfully logged in!",
         });
       } else {
-        return res.render("login", {
+        return res.render("edit", {
           message: "Invalid login credentials",
         });
       }
