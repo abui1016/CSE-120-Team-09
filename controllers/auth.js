@@ -5,7 +5,7 @@ var date = new Date();
 var myDate = new Date();
         // get hour value.
         var hours = myDate.getHours();
-        var ampm = hours >= 12 ? 'PM' : 'AM';
+        var ampm = hours >= 12 ? 'Pm' : 'Am';
         hours = hours % 12;
         hours = hours ? hours : 12;
         var minutes = myDate.getMinutes();
@@ -51,25 +51,13 @@ transporter.verify(function (error, success) {
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
-  subject: "Nodemailer Registration",
-  text: "A user has successfully signed up at " + getTime() +"!",
-  // attachments: [
-  //   {
-  //     path: "directory/filename",
-  //   },
-  // ],
-};
-
-const optionsLogin = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer Login",
-  text: "A user has successfully logged in at " + getTime(),
-  // attachments: [
-  //     {
-  //       path: 'directory/filename'
-  //     },
-  //   ],
+  subject: "EFM : Account Registered",
+  text: "Hello , " + " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
+  attachments: [
+      {
+        path: 'directory/filename'
+      },
+    ],
 };
 
 function sendMailRegister() {
@@ -82,8 +70,41 @@ function sendMailRegister() {
   });
 }
 
+const optionsLogin = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Early Family Math User Login",
+  text: "User has successfully logged in at " + getTime() + ".",
+ 
+};
+
 function sendMailLogin() {
   transporter.sendMail(optionsLogin, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+}
+
+
+// This is for sending out the email upon any change to a users setting. 
+
+const optionsSettingChange = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Nodemailer Login",
+  text: "A user has successfully logged in at " + getTime(),
+  // attachments: [
+  //     {
+  //       path: 'directory/filename'
+  //     },
+  //   ],
+};
+
+function sendMailSettingChange() {
+  transporter.sendMail(optionsSettingChange, function (err, info) {
     if (err) {
       console.log(err);
       return;
@@ -194,12 +215,12 @@ exports.login = (req, res) => {
       }
       if (results.length === 1) {
         sendMailLogin();
-        return res.render("edit", {
+        return res.render("login", {
           message: "Successfully logged in!",
         });
       } else {
-        return res.render("edit", {
-          message: "Invalid login credentials",
+        return res.render("login", {
+          message: "This is the number of items " ,
         });
       }
     }
