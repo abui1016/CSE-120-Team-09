@@ -1,5 +1,4 @@
 // gets time for the timestamps. 
-// test change
 function getTime(){
 var date = new Date();
 var myDate = new Date();
