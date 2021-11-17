@@ -10,7 +10,5 @@ router.post("/register", authController.register);
 // For logging in user
 router.post("/login", authController.login);
 
-// test configuration on my end. 
-router.post("/test", authController.test);
 
 module.exports = router;

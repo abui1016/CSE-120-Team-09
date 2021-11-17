@@ -158,14 +158,6 @@ exports.register = (req, res) => {
     skillLevel,
   } = req.body;
 
-
-  // Checks to see if any input was actually inputed into all the fields otherwise sends them all back. 
-  if(firstName  == ""|| lastName  == "" ||emailAddress  == "" ||phoneNumber  == "" ||password  == "" || passwordConfirm  == "" || passwordConfirm == "" ){
-    return res.render("register", {
-      message: "Please input all feilds before continuing",
-    });
-  }
-
   // Query into database
   // for bcrypt -> add 'async' in front of (error, results)
   db.query(
