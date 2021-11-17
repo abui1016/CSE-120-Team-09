@@ -37,7 +37,9 @@
                   class="mb-4 pb-2 pb-md-0 mb-md-5 row justify-content-center"
                 >Registration</h3>
                 <form action="/auth/register" method="post">
-
+                  {{#if message}}
+                  <h4 class="alert", color ="Red">{{message}}</h4>
+                   {{/if}}
                   <div class="row">
                     <div class="col-md-6 mb-4">
 
@@ -97,7 +99,7 @@
                           placeholder="Phone Number"
                           name="phoneNumber"
                         />
-                        <label class="form-label" for="phoneNumber">Phone Number</label>
+                        <label class="form-label" for="phoneNumber" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">Phone Number</label>
                       </div>
 
                     </div>
@@ -172,9 +174,6 @@
             </div>
           </div>
         </div>
-        {{#if message}}
-          <h4 class="alert">{{message}}</h4>
-        {{/if}}
       </div>
     </section>
   </body>

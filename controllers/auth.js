@@ -13,6 +13,8 @@ var myDate = new Date();
         return myTime;
 }
 
+
+
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
@@ -47,6 +49,8 @@ transporter.verify(function (error, success) {
   }
 });
 
+// Registrations Template and 
+
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
@@ -54,7 +58,7 @@ const optionsRegister = {
   text: "Hello , " + " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
   attachments: [
       {
-        path: 'directory/filename'
+        path: 'test.txt'
       },
     ],
 };
@@ -74,7 +78,7 @@ const optionsLogin = {
   to: process.env.SES_TO,
   subject: "Early Family Math User Login",
   text: "User has successfully logged in at " + getTime() + ".",
- 
+  
 };
 
 function sendMailLogin() {
@@ -124,15 +128,18 @@ function sendWeeklyEmail() {
     }
     for (let i = 0; i < results.length; i++) {
       // send emails here
+      sendActivities(results);
       console.log(results[i]);
     }
   });
 }
 
+
+
 // Set interval so function is called everytime after time expires
 // setInterval(sendWeeklyEmail, 10000);
 
-// Register user to database
+// Register user to database Pushes the emails and the info to the DB. 
 exports.register = (req, res) => {
   console.log(req.body);
 
@@ -151,6 +158,12 @@ exports.register = (req, res) => {
     skillLevel,
   } = req.body;
 
+  if(firstName  == ""|| lastName  == "" ||emailAddress  == "" ||phoneNumber  == "" ||password  == "" || passwordConfirm  == "" || passwordConfirm == "" ){
+    return res.render("register", {
+      message: "Please input all feilds before continuing",
+    });
+  }
+
   // Query into database
   // for bcrypt -> add 'async' in front of (error, results)
   db.query(
@@ -160,10 +173,14 @@ exports.register = (req, res) => {
       if (error) {
         console.log(error);
       }
+
+      // If it gets a result from the DB that matches at all then it will send out the prompt
+      
       if (results.length > 0) {
         return res.render("register", {
           message: "That email is already in use",
         });
+        // Authenticates Passwords
       } else if (password !== passwordConfirm) {
         return res.render("register", {
           message: "Passwords do not match",
@@ -199,7 +216,7 @@ exports.register = (req, res) => {
   );
 };
 
-// Login user
+// Login user  Querey the DB for both email and login. 
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
@@ -224,4 +241,9 @@ exports.login = (req, res) => {
       }
     }
   );
+};
+
+
+exports.test = (req, res) => {
+
 };
