@@ -50,6 +50,7 @@
                           class="form-control form-control-lg"
                           placeholder="First Name"
                           name="firstName"
+                          required
                         />
                         <label class="form-label" for="firstName">First Name</label>
                       </div>
@@ -64,6 +65,7 @@
                           class="form-control form-control-lg"
                           placeholder="Last Name"
                           name="lastName"
+                          required
                         />
                         <label class="form-label" for="lastName">Last Name</label>
                       </div>
@@ -81,6 +83,7 @@
                           class="form-control form-control-lg"
                           placeholder="Email Address"
                           name="emailAddress"
+                          required
                         />
                         <label
                           class="form-label"
@@ -98,6 +101,7 @@
                           class="form-control form-control-lg"
                           placeholder="Phone Number"
                           name="phoneNumber"
+                          required
                         />
                         <label class="form-label" for="phoneNumber"  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">Phone Number :<br> Example 555-555-5555</label>
                       </div>
@@ -115,6 +119,7 @@
                           class="form-control form-control-lg"
                           placeholder="Password"
                           name="password"
+                          required
                         />
                         <label
                           class="form-label"
@@ -132,6 +137,7 @@
                           class="form-control form-control-lg"
                           placeholder="Confirm Password"
                           name="passwordConfirm"
+                          required
                         />
                         <label class="form-label" for="passwordConfirm">Confirm
                           Password</label>
@@ -162,6 +168,7 @@
 
                   <div class="mt-4 pt-2">
                     <input
+                      onClick="return empty()"
                       class="btn btn-primary btn-lg"
                       type="submit"
                       value="Register!"
