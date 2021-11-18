@@ -1,25 +1,25 @@
-// gets time for the timestamps. 
-function getTime(){
-var date = new Date();
-var myDate = new Date();
-        // get hour value.
-        var hours = myDate.getHours();
-        var ampm = hours >= 12 ? 'Pm' : 'Am';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        var minutes = myDate.getMinutes();
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        var myTime = hours + " " + ampm + " : " + minutes;
-        return myTime;
+// gets time for the timestamps.
+function getTime() {
+  const date = new Date();
+  const myDate = new Date();
+  // get hour value.
+  let hours = myDate.getHours();
+  const ampm = hours >= 12 ? "Pm" : "Am";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  let minutes = myDate.getMinutes();
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  const myTime = hours + " " + ampm + " : " + minutes;
+  return myTime;
 }
-
-
 
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-// const bcrypt = require('bcryptjs');
+const bcrypt = require("bcrypt");
+
+const saltRounds = 10;
 
 const db = mysql.createConnection({
   host: process.env.RDS_HOSTNAME,
@@ -49,18 +49,20 @@ transporter.verify(function (error, success) {
   }
 });
 
-// Registrations Template and 
+// Registrations Template and
 
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "EFM : Account Registered",
-  text: "Hello , " + " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
+  text:
+    "Hello , " +
+    " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
   attachments: [
-      {
-        path: 'test.txt'
-      },
-    ],
+    {
+      path: "test.txt",
+    },
+  ],
 };
 
 function sendMailRegister() {
@@ -78,7 +80,6 @@ const optionsLogin = {
   to: process.env.SES_TO,
   subject: "Early Family Math User Login",
   text: "User has successfully logged in at " + getTime() + ".",
-  
 };
 
 function sendMailLogin() {
@@ -91,8 +92,7 @@ function sendMailLogin() {
   });
 }
 
-
-// This is for sending out the email upon any change to a users setting. 
+// This is for sending out the email upon any change to a users setting.
 
 const optionsSettingChange = {
   from: process.env.SES_FROM,
@@ -134,12 +134,10 @@ function sendWeeklyEmail() {
   });
 }
 
-
-
 // Set interval so function is called everytime after time expires
 // setInterval(sendWeeklyEmail, 10000);
 
-// Register user to database Pushes the emails and the info to the DB. 
+// Register user to database Pushes the emails and the info to the DB.
 exports.register = (req, res) => {
   console.log(req.body);
 
@@ -169,7 +167,7 @@ exports.register = (req, res) => {
       }
 
       // If it gets a result from the DB that matches at all then it will send out the prompt
-      
+
       if (results.length > 0) {
         return res.render("register", {
           message: "That email is already in use",
@@ -183,6 +181,10 @@ exports.register = (req, res) => {
       // let hashedPassword = await bcrypt.hash(password, 8)
       // console.log(hashedPassword);
       // res.send('testing')
+
+      // const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      // console.log(hashedPassword);
+      // console.log(bcrypt.compareSync(password, hashedPassword));
 
       db.query(
         "INSERT INTO users SET ?",
@@ -210,9 +212,21 @@ exports.register = (req, res) => {
   );
 };
 
-// Login user  Querey the DB for both email and login. 
+// Login user  Querey the DB for both email and login.
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
+
+  // Get password
+  // db.query(
+  //   "SELECT password FROM users WHERE emailAddress = ?",
+  //   [emailAddress],
+  //   (error, results) => {
+  //     if (error) {
+  //       console.log(error);
+  //     }
+  //     console.log(results);
+  //   }
+  // );
 
   // Query DB to match an email and password
   // If there is no match -> invalid login
@@ -230,14 +244,11 @@ exports.login = (req, res) => {
         });
       } else {
         return res.render("login", {
-          message: "This is the number of items " ,
+          message: "This is the number of items ",
         });
       }
     }
   );
 };
 
-
-exports.test = (req, res) => {
-
-};
+exports.test = (req, res) => {};
