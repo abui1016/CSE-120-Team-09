@@ -10,5 +10,4 @@ router.post("/register", authController.register);
 // For logging in user
 router.post("/login", authController.login);
 
-
 module.exports = router;
