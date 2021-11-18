@@ -102,11 +102,6 @@ const optionsSettingChange = {
   to: process.env.SES_TO,
   subject: "Nodemailer Login",
   text: "A user has successfully logged in at " + getTime(),
-  // attachments: [
-  //     {
-  //       path: 'directory/filename'
-  //     },
-  //   ],
 };
 
 function sendMailSettingChange() {
@@ -119,23 +114,75 @@ function sendMailSettingChange() {
   });
 }
 
+
+function sendActivity(user){
+  const optionsRegister = {
+    from: process.env.SES_FROM,
+    to: user.emailAddress,
+    subject: "EFM : " + user.firstName + "Activity ",
+    text:
+      "Hello , " + user.firstName +"\n Here is your activity  ",
+    attachments: [
+      {
+        path: "C:\Users\bomba\Desktop\CSE-120-Team-09\Activities\Chapter 3 Individual Activities-1-13-1.pdf",
+      },
+    ],
+  };
+  transporter.sendMail(optionsSettingChange, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+
+
+}
+
+
+
+function sendWeeklyEmail() {
+
+
+
+  db.query(
+  "SELECT firstName, emailAddress, skillLevel,subscribed from users",
+  (error, results) => {
+    if (error) throw error;
+    
+        console.log(results[0]);
+        if(results[i].subscribed == "TRUE"){
+             sendActivity(results[0]);
+        }else{
+          return;
+    }
+  }
+);
+
+}
+
+
+
+
+
+
 // Sample function to send out weekly emails
 // Get emails
 // results is an array, i.e. results[0] is first email
-const oneDay = 86400000;
-const oneWeek = 604800000;
-function sendWeeklyEmail() {
-  db.query("SELECT email FROM users", (error, results) => {
-    if (error) {
-      console.log(error);
-    }
-    for (let i = 0; i < results.length; i++) {
-      // send emails here
-      sendActivities(results);
-      console.log(results[i]);
-    }
-  });
-}
+// const oneDay = 86400000;
+// const oneWeek = 604800000;
+// function sendWeeklyEmail() {
+//   db.query("SELECT email FROM users", (error, results) => {
+//     if (error) {
+//       console.log(error);
+//     }
+//     for (let i = 0; i < results.length; i++) {
+//       // send emails here
+//       sendActivities(results);
+//       console.log(results[i]);
+//     }
+//   });
+// }
 
 // Set interval so function is called everytime after time expires
 // setInterval(sendWeeklyEmail, 10000);
@@ -219,20 +266,6 @@ exports.register = (req, res) => {
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
-  // Get password
-  // db.query(
-  //   "SELECT password FROM users WHERE emailAddress = ?",
-  //   [emailAddress],
-  //   (error, results) => {
-  //     if (error) {
-  //       console.log(error);
-  //     }
-  //     console.log(results);
-  //   }
-  // );
-
-  // Query DB to match an email and password
-  // If there is no match -> invalid login
   db.query(
     "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
     [emailAddress, password],
@@ -241,8 +274,8 @@ exports.login = (req, res) => {
         console.log(error);
       }
       if (results.length === 1) {
-       var  email = req.body.emailAddress;
-       sendMailLogin(email);
+       
+       sendMailLogin(req.body.emailAddress);
         return res.render("login", {
           message: "Successfully logged in!",
         });
@@ -257,17 +290,6 @@ exports.login = (req, res) => {
 
 exports.test = (req, res) => {
 
-  
-    db.query(
-      "SELECT firstName, emailAddress, skillLevel from users",
-      (error, results) => {
-        if (error) throw error;
-        for (let i = 0; i < results.length; i++) {
-          
-        }
-      }
-    );
-
-
+  sendWeeklyEmail();
   
 };
