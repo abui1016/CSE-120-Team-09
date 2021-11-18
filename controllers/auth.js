@@ -1,15 +1,15 @@
 // gets time for the timestamps.
 function getTime() {
-  var date = new Date();
-  var myDate = new Date();
+  const date = new Date();
+  const myDate = new Date();
   // get hour value.
-  var hours = myDate.getHours();
-  var ampm = hours >= 12 ? "Pm" : "Am";
+  let hours = myDate.getHours();
+  const ampm = hours >= 12 ? "Pm" : "Am";
   hours = hours % 12;
   hours = hours ? hours : 12;
-  var minutes = myDate.getMinutes();
+  let minutes = myDate.getMinutes();
   minutes = minutes < 10 ? "0" + minutes : minutes;
-  var myTime = hours + " " + ampm + " : " + minutes;
+  const myTime = hours + " " + ampm + " : " + minutes;
   return myTime;
 }
 
@@ -17,7 +17,9 @@ function getTime() {
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-// const bcrypt = require('bcryptjs');
+const bcrypt = require("bcrypt");
+
+const saltRounds = 10;
 
 const db = mysql.createConnection({
   host: process.env.RDS_HOSTNAME,
@@ -167,18 +169,22 @@ exports.register = (req, res) => {
       // If it gets a result from the DB that matches at all then it will send out the prompt
 
       if (results.length > 0) {
-        return res.render("register2", {
+        return res.render("register", {
           message: "That email is already in use",
         });
         // Authenticates Passwords
       } else if (password !== passwordConfirm) {
-        return res.render("register2", {
+        return res.render("register", {
           message: "Passwords do not match",
         });
       }
       // let hashedPassword = await bcrypt.hash(password, 8)
       // console.log(hashedPassword);
       // res.send('testing')
+
+      // const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      // console.log(hashedPassword);
+      // console.log(bcrypt.compareSync(password, hashedPassword));
 
       db.query(
         "INSERT INTO users SET ?",
@@ -196,7 +202,7 @@ exports.register = (req, res) => {
           } else {
             console.log(results);
             sendMailRegister();
-            return res.render("register2", {
+            return res.render("register", {
               message: "User registered!",
             });
           }
@@ -209,6 +215,18 @@ exports.register = (req, res) => {
 // Login user  Querey the DB for both email and login.
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
+
+  // Get password
+  // db.query(
+  //   "SELECT password FROM users WHERE emailAddress = ?",
+  //   [emailAddress],
+  //   (error, results) => {
+  //     if (error) {
+  //       console.log(error);
+  //     }
+  //     console.log(results);
+  //   }
+  // );
 
   // Query DB to match an email and password
   // If there is no match -> invalid login
