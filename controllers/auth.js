@@ -17,7 +17,8 @@ function getTime() {
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
+
+// const bcrypt = require("bcrypt");
 
 const saltRounds = 10;
 
@@ -75,14 +76,16 @@ function sendMailRegister() {
   });
 }
 
-const optionsLogin = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Early Family Math User Login",
-  text: "User has successfully logged in at " + getTime() + ".",
-};
 
-function sendMailLogin() {
+
+function sendMailLogin(email) {
+    const optionsLogin = {
+    from: process.env.SES_FROM,
+    to: email,
+    subject: "Early Family Math User Login",
+    text: "User has successfully logged in at " + getTime() + ".",
+  };
+
   transporter.sendMail(optionsLogin, function (err, info) {
     if (err) {
       console.log(err);
@@ -238,7 +241,8 @@ exports.login = (req, res) => {
         console.log(error);
       }
       if (results.length === 1) {
-        sendMailLogin();
+       var  email = req.body.emailAddress;
+       sendMailLogin(email);
         return res.render("login", {
           message: "Successfully logged in!",
         });
@@ -251,4 +255,19 @@ exports.login = (req, res) => {
   );
 };
 
-exports.test = (req, res) => {};
+exports.test = (req, res) => {
+
+  
+    db.query(
+      "SELECT firstName, emailAddress, skillLevel from users",
+      (error, results) => {
+        if (error) throw error;
+        for (let i = 0; i < results.length; i++) {
+          
+        }
+      }
+    );
+
+
+  
+};
