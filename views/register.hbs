@@ -1,72 +1,187 @@
-<html>
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Test Registration Form</title>
-    <meta name="description" content="" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>registration</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+    <link
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+      rel="stylesheet"
+      id="bootstrap-css"
+    />
+    <script
+      src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+    ></script>
+    <script
+      src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
+    ></script>
+    <link rel="stylesheet" type="text/css" href="style.css " media="screen" />
   </head>
   <body>
-    <h1>Test Registration Page</h1>
-    <form action="/auth/register" method="POST">
-      <div>
-        <label for="name">Name</label>
-        <input type="text" placeholder="Name" id="name" name="name" />
+    <section class="vh-100 gradient-custom">
+      <div class="container py-5 h-100">
+        <div class="row justify-content-center align-items-center h-100">
+          <div class="col-12 col-lg-9 col-xl-7">
+            <div
+              class="card shadow-2-strong card-registration"
+              style="border-radius: 15px;"
+            >
+              <div class="card-body p-4 p-md-5">
+                <h3
+                  class="mb-4 pb-2 pb-md-0 mb-md-5 row justify-content-center"
+                >Registration</h3>
+                <form action="/auth/register" method="post">
+                  {{#if message}}
+                  <h4 class="alert", color ="Red">{{message}}</h4>
+                   {{/if}}
+                  <div class="row">
+                    <div class="col-md-6 mb-4">
+
+                      <div class="form-outline">
+                        <input
+                          type="text"
+                          id="firstName"
+                          class="form-control form-control-lg"
+                          placeholder="First Name"
+                          name="firstName"
+                          required
+                        />
+                        <label class="form-label" for="firstName">First Name</label>
+                      </div>
+
+                    </div>
+                    <div class="col-md-6 mb-4">
+
+                      <div class="form-outline">
+                        <input
+                          type="text"
+                          id="lastName"
+                          class="form-control form-control-lg"
+                          placeholder="Last Name"
+                          name="lastName"
+                          required
+                        />
+                        <label class="form-label" for="lastName">Last Name</label>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-4 pb-2">
+
+                      <div class="form-outline">
+                        <input
+                          type="email"
+                          id="emailAddress"
+                          class="form-control form-control-lg"
+                          placeholder="Email Address"
+                          name="emailAddress"
+                          required
+                        />
+                        <label
+                          class="form-label"
+                          for="emailAddress"
+                        >Email : <br> Example email@gmail.com</label>
+                      </div>
+
+                    </div>
+                    <div class="col-md-6 mb-4 pb-2">
+
+                      <div class="form-outline">
+                        <input
+                          type="tel"
+                          id="phoneNumber"
+                          class="form-control form-control-lg"
+                          placeholder="Phone Number"
+                          name="phoneNumber"
+                          required
+                        />
+                        <label class="form-label" for="phoneNumber"  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">Phone Number :<br> Example 555-555-5555</label>
+                      </div>
+                      
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-4">
+
+                      <div class="form-outline">
+                        <input
+                          type="password"
+                          id="password"
+                          class="form-control form-control-lg"
+                          placeholder="Password"
+                          name="password"
+                          required
+                        />
+                        <label
+                          class="form-label"
+                          for="password"
+                        >Password</label>
+                      </div>
+
+                    </div>
+                    <div class="col-md-6 mb-4">
+
+                      <div class="form-outline">
+                        <input
+                          type="password"
+                          id="passwordConfirm"
+                          class="form-control form-control-lg"
+                          placeholder="Confirm Password"
+                          name="passwordConfirm"
+                          required
+                        />
+                        <label class="form-label" for="passwordConfirm">Confirm
+                          Password</label>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-12">
+
+                      <select
+                        class="select form-control-lg"
+                        name="skillLevel"
+                        id="skillLevel"
+                      >
+                        <option value="0" disabled>Choose option</option>
+                        <option value="1">Math Level 1</option>
+                        <option value="2">Math Level 2</option>
+                        <option value="3">Math Level 3</option>
+                        <option value="4">Math Level 4</option>
+                        <option value="5">Math Level 5</option>
+                      </select>
+                      <label class="form-label select-label">Choose option</label>
+
+                    </div>
+                  </div>
+
+                  <div class="mt-4 pt-2">
+                    <input
+                      onClick="return empty()"
+                      class="btn btn-primary btn-lg"
+                      type="submit"
+                      value="Register!"
+                    />
+                    <br />
+                    <a href="login.html">Already have an account? Login here</a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <label for="email">Email Address</label>
-        <input type="email" placeholder="Email" id="email" name="email" />
-      </div>
-      <div>
-        <label for="phoneNumber">Phone Number</label>
-        <input
-          type="text"
-          placeholder="Phone Number"
-          id="phoneNumber"
-          name="phoneNumber"
-        />
-      </div>
-      <div>
-        <label for="password">Password</label>
-        <input
-          type="password"
-          placeholder="Password"
-          id="password"
-          name="password"
-        />
-      </div>
-      <div>
-        <label for="passwordConfirm">Confirm Password</label>
-        <input
-          type="password"
-          placeholder="Password"
-          id="passwordConfirm"
-          name="passwordConfirm"
-        />
-      </div>
-      <div>
-        <label for="skillLevel">Skill Level</label>
-        <input
-          type="number"
-          max="5"
-          min="1"
-          name="skillLevel"
-          id="skillLevel"
-        />
-      </div>
-      <button type="submit">Register</button>
-    </form>
-    <div>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="register">Register</a></li>
-        <li><a href="login">Login</a></li>
-      </ul>
-    </div>
-    {{#if message}}
-      <h4 class="alert">{{message}}</h4>
-    {{/if}}
-    <script src="" async defer></script>
+    </section>
   </body>
 </html>

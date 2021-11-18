@@ -1,3 +1,18 @@
+// gets time for the timestamps.
+function getTime() {
+  var date = new Date();
+  var myDate = new Date();
+  // get hour value.
+  var hours = myDate.getHours();
+  var ampm = hours >= 12 ? "Pm" : "Am";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  var minutes = myDate.getMinutes();
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  var myTime = hours + " " + ampm + " : " + minutes;
+  return myTime;
+}
+
 // Import DB and SQL
 const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
@@ -32,28 +47,20 @@ transporter.verify(function (error, success) {
   }
 });
 
+// Registrations Template and
+
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
-  subject: "Nodemailer Registration",
-  text: "A user has successfully signed up!",
-  // attachments: [
-  //   {
-  //     path: "directory/filename",
-  //   },
-  // ],
-};
-
-const optionsLogin = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer Login",
-  text: "A user has successfully logged in",
-  // attachments: [
-  //     {
-  //       path: 'directory/filename'
-  //     },
-  //   ],
+  subject: "EFM : Account Registered",
+  text:
+    "Hello , " +
+    " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
+  attachments: [
+    {
+      path: "test.txt",
+    },
+  ],
 };
 
 function sendMailRegister() {
@@ -66,8 +73,39 @@ function sendMailRegister() {
   });
 }
 
+const optionsLogin = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Early Family Math User Login",
+  text: "User has successfully logged in at " + getTime() + ".",
+};
+
 function sendMailLogin() {
   transporter.sendMail(optionsLogin, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+}
+
+// This is for sending out the email upon any change to a users setting.
+
+const optionsSettingChange = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Nodemailer Login",
+  text: "A user has successfully logged in at " + getTime(),
+  // attachments: [
+  //     {
+  //       path: 'directory/filename'
+  //     },
+  //   ],
+};
+
+function sendMailSettingChange() {
+  transporter.sendMail(optionsSettingChange, function (err, info) {
     if (err) {
       console.log(err);
       return;
@@ -88,6 +126,7 @@ function sendWeeklyEmail() {
     }
     for (let i = 0; i < results.length; i++) {
       // send emails here
+      sendActivities(results);
       console.log(results[i]);
     }
   });
@@ -96,7 +135,7 @@ function sendWeeklyEmail() {
 // Set interval so function is called everytime after time expires
 // setInterval(sendWeeklyEmail, 10000);
 
-// Register user to database
+// Register user to database Pushes the emails and the info to the DB.
 exports.register = (req, res) => {
   console.log(req.body);
 
@@ -124,10 +163,14 @@ exports.register = (req, res) => {
       if (error) {
         console.log(error);
       }
+
+      // If it gets a result from the DB that matches at all then it will send out the prompt
+
       if (results.length > 0) {
         return res.render("register2", {
           message: "That email is already in use",
         });
+        // Authenticates Passwords
       } else if (password !== passwordConfirm) {
         return res.render("register2", {
           message: "Passwords do not match",
@@ -163,14 +206,14 @@ exports.register = (req, res) => {
   );
 };
 
-// Login user
+// Login user  Querey the DB for both email and login.
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
   // Query DB to match an email and password
   // If there is no match -> invalid login
   db.query(
-    "SELECT emailAddress, password FROM users WHERE emailAdress = ? AND password = ?",
+    "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
     [emailAddress, password],
     (error, results) => {
       if (error) {
@@ -183,9 +226,11 @@ exports.login = (req, res) => {
         });
       } else {
         return res.render("login", {
-          message: "Invalid login credentials",
+          message: "This is the number of items ",
         });
       }
     }
   );
 };
+
+exports.test = (req, res) => {};
