@@ -13,11 +13,12 @@ function getTime() {
   return myTime;
 }
 
-// Import DB and SQL
+// Import
 const mysql = require("mysql");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+const url = require("url");
 
 const saltRounds = 10;
 
@@ -49,8 +50,7 @@ transporter.verify(function (error, success) {
   }
 });
 
-// Registrations Template and
-
+// Email Templates
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
@@ -65,34 +65,12 @@ const optionsRegister = {
   ],
 };
 
-function sendMailRegister() {
-  transporter.sendMail(optionsRegister, function (err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Sent: " + info.response);
-  });
-}
-
 const optionsLogin = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "Early Family Math User Login",
-  text: "User has successfully logged in at " + getTime() + ".",
+  text: "User has successfully logged in at " + ".",
 };
-
-function sendMailLogin() {
-  transporter.sendMail(optionsLogin, function (err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Sent: " + info.response);
-  });
-}
-
-// This is for sending out the email upon any change to a users setting.
 
 const optionsSettingChange = {
   from: process.env.SES_FROM,
@@ -105,6 +83,27 @@ const optionsSettingChange = {
   //     },
   //   ],
 };
+
+// Email functions
+function sendMailRegister() {
+  transporter.sendMail(optionsRegister, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+}
+
+function sendMailLogin() {
+  transporter.sendMail(optionsLogin, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+}
 
 function sendMailSettingChange() {
   transporter.sendMail(optionsSettingChange, function (err, info) {
@@ -228,7 +227,7 @@ exports.login = (req, res) => {
         // Query DB to match an email and password
         // If there is no match -> invalid login
         db.query(
-          "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
+          "SELECT * FROM users WHERE emailAddress = ? AND password = ?",
           [emailAddress, results[0].password],
           (error, results) => {
             if (error) {
@@ -236,12 +235,17 @@ exports.login = (req, res) => {
             }
             if (results.length === 1) {
               sendMailLogin();
-              return res.render("login", {
-                message: "Successfully logged in!",
+              return res.render("editInfo", {
+                firstName: results[0].firstName,
+                lastName: results[0].lastName,
+                emailAddress: results[0].emailAddress,
+                phoneNumber: results[0].phoneNumber,
+                password: results[0].password,
+                skillLevel: results[0].skillLevel,
               });
             } else {
               return res.render("login", {
-                message: "This is the number of items ",
+                message: "Invalid login credentials",
               });
             }
           }
@@ -249,6 +253,21 @@ exports.login = (req, res) => {
       }
     }
   );
+};
+
+exports.editInfo = (req, res) => {
+  // console.log(req.body);
+  const {
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    password,
+    passwordConfirm,
+    skillLevel,
+  } = req.body;
+  // Query into DB and UPDATE
+  return res.redirect("http://localhost:3304");
 };
 
 exports.test = (req, res) => {};
