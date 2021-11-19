@@ -182,7 +182,7 @@ exports.register = (req, res) => {
       // console.log(hashedPassword);
       // res.send('testing')
 
-      // const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
       // console.log(hashedPassword);
       // console.log(bcrypt.compareSync(password, hashedPassword));
 
@@ -193,7 +193,7 @@ exports.register = (req, res) => {
           lastName: lastName,
           emailAddress: emailAddress,
           phoneNumber: phoneNumber,
-          password: password,
+          password: hashedPassword,
           skillLevel: skillLevel,
         },
         (error, results) => {
@@ -217,35 +217,35 @@ exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
   // Get password
-  // db.query(
-  //   "SELECT password FROM users WHERE emailAddress = ?",
-  //   [emailAddress],
-  //   (error, results) => {
-  //     if (error) {
-  //       console.log(error);
-  //     }
-  //     console.log(results);
-  //   }
-  // );
-
-  // Query DB to match an email and password
-  // If there is no match -> invalid login
   db.query(
-    "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
-    [emailAddress, password],
+    "SELECT password FROM users WHERE emailAddress = ?",
+    [emailAddress],
     (error, results) => {
       if (error) {
         console.log(error);
       }
-      if (results.length === 1) {
-        sendMailLogin();
-        return res.render("login", {
-          message: "Successfully logged in!",
-        });
-      } else {
-        return res.render("login", {
-          message: "This is the number of items ",
-        });
+      if (bcrypt.compareSync(password, results[0].password)) {
+        // Query DB to match an email and password
+        // If there is no match -> invalid login
+        db.query(
+          "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
+          [emailAddress, results[0].password],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+            if (results.length === 1) {
+              sendMailLogin();
+              return res.render("login", {
+                message: "Successfully logged in!",
+              });
+            } else {
+              return res.render("login", {
+                message: "This is the number of items ",
+              });
+            }
+          }
+        );
       }
     }
   );
