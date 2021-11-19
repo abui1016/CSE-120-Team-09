@@ -10,10 +10,7 @@ function getTime() {
   let minutes = myDate.getMinutes();
   minutes = minutes < 10 ? "0" + minutes : minutes;
   const myTime = hours + " " + ampm + " : " + minutes;
-  return myTime;
-}
-
-// Import
+  return// Import
 const mysql = require("mysql");
 // const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -181,7 +178,7 @@ exports.register = (req, res) => {
       // console.log(hashedPassword);
       // res.send('testing')
 
-      const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      const hashed//Password = bcrypt.hashSync(password, saltRounds);
       // console.log(hashedPassword);
       // console.log(bcrypt.compareSync(password, hashedPassword));
 
@@ -270,4 +267,20 @@ exports.editInfo = (req, res) => {
   } = req.body;
   // Query into DB and UPDATE
   return res.redirect("http://localhost:3304");
+ return res.render("login", {
+          message: "Successfully logged in!",
+        });
+      } else {
+        return res.render("login", {
+          message: "This is the number of items ",
+        });
+      }
+    }
+  );
+};
+
+exports.test = (req, res) => {
+
+  sendWeeklyEmail();
+  
 };
