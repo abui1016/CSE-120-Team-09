@@ -242,6 +242,7 @@ exports.login = (req, res) => {
                 phoneNumber: results[0].phoneNumber,
                 password: results[0].password,
                 skillLevel: results[0].skillLevel,
+                id: results[0].id,
               });
             } else {
               return res.render("login", {
@@ -256,7 +257,7 @@ exports.login = (req, res) => {
 };
 
 exports.editInfo = (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   const {
     firstName,
     lastName,
@@ -265,9 +266,8 @@ exports.editInfo = (req, res) => {
     password,
     passwordConfirm,
     skillLevel,
+    id,
   } = req.body;
   // Query into DB and UPDATE
   return res.redirect("http://localhost:3304");
 };
-
-exports.test = (req, res) => {};
