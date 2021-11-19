@@ -16,9 +16,8 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
-router.get("/test", (req, res) => {
-  res.render("test");
+router.get("/editInfo", (req, res) => {
+  res.render("editInfo");
 });
-
 
 module.exports = router;

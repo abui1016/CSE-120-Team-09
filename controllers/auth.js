@@ -13,12 +13,12 @@ function getTime() {
   return myTime;
 }
 
-// Import DB and SQL
+// Import
 const mysql = require("mysql");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
+const url = require("url");
 
 const saltRounds = 10;
 
@@ -50,8 +50,7 @@ transporter.verify(function (error, success) {
   }
 });
 
-// Registrations Template and
-
+// Email Templates
 const optionsRegister = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
@@ -66,6 +65,26 @@ const optionsRegister = {
   ],
 };
 
+const optionsLogin = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Early Family Math User Login",
+  text: "User has successfully logged in at " + ".",
+};
+
+const optionsSettingChange = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Nodemailer Login",
+  text: "A user has successfully logged in at " + getTime(),
+  // attachments: [
+  //     {
+  //       path: 'directory/filename'
+  //     },
+  //   ],
+};
+
+// Email functions
 function sendMailRegister() {
   transporter.sendMail(optionsRegister, function (err, info) {
     if (err) {
@@ -76,16 +95,7 @@ function sendMailRegister() {
   });
 }
 
-
-
-function sendMailLogin(email) {
-    const optionsLogin = {
-    from: process.env.SES_FROM,
-    to: email,
-    subject: "Early Family Math User Login",
-    text: "User has successfully logged in at " + getTime() + ".",
-  };
-
+function sendMailLogin() {
   transporter.sendMail(optionsLogin, function (err, info) {
     if (err) {
       console.log(err);
@@ -94,15 +104,6 @@ function sendMailLogin(email) {
     console.log("Sent: " + info.response);
   });
 }
-
-// This is for sending out the email upon any change to a users setting.
-
-const optionsSettingChange = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer Login",
-  text: "A user has successfully logged in at " + getTime(),
-};
 
 function sendMailSettingChange() {
   transporter.sendMail(optionsSettingChange, function (err, info) {
@@ -114,75 +115,23 @@ function sendMailSettingChange() {
   });
 }
 
-
-function sendActivity(user){
-  const optionsRegister = {
-    from: process.env.SES_FROM,
-    to: user.emailAddress,
-    subject: "EFM : " + user.firstName + "Activity ",
-    text:
-      "Hello , " + user.firstName +"\n Here is your activity  ",
-    attachments: [
-      {
-        path: "C:\Users\bomba\Desktop\CSE-120-Team-09\Activities\Chapter 3 Individual Activities-1-13-1.pdf",
-      },
-    ],
-  };
-  transporter.sendMail(optionsSettingChange, function (err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Sent: " + info.response);
-  });
-
-
-}
-
-
-
-function sendWeeklyEmail() {
-
-
-
-  db.query(
-  "SELECT firstName, emailAddress, skillLevel,subscribed from users",
-  (error, results) => {
-    if (error) throw error;
-    
-        console.log(results[0]);
-        if(results[i].subscribed == "TRUE"){
-             sendActivity(results[0]);
-        }else{
-          return;
-    }
-  }
-);
-
-}
-
-
-
-
-
-
 // Sample function to send out weekly emails
 // Get emails
 // results is an array, i.e. results[0] is first email
-// const oneDay = 86400000;
-// const oneWeek = 604800000;
-// function sendWeeklyEmail() {
-//   db.query("SELECT email FROM users", (error, results) => {
-//     if (error) {
-//       console.log(error);
-//     }
-//     for (let i = 0; i < results.length; i++) {
-//       // send emails here
-//       sendActivities(results);
-//       console.log(results[i]);
-//     }
-//   });
-// }
+const oneDay = 86400000;
+const oneWeek = 604800000;
+function sendWeeklyEmail() {
+  db.query("SELECT email FROM users", (error, results) => {
+    if (error) {
+      console.log(error);
+    }
+    for (let i = 0; i < results.length; i++) {
+      // send emails here
+      sendActivities(results);
+      console.log(results[i]);
+    }
+  });
+}
 
 // Set interval so function is called everytime after time expires
 // setInterval(sendWeeklyEmail, 10000);
@@ -232,7 +181,7 @@ exports.register = (req, res) => {
       // console.log(hashedPassword);
       // res.send('testing')
 
-      // const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
       // console.log(hashedPassword);
       // console.log(bcrypt.compareSync(password, hashedPassword));
 
@@ -243,7 +192,7 @@ exports.register = (req, res) => {
           lastName: lastName,
           emailAddress: emailAddress,
           phoneNumber: phoneNumber,
-          password: password,
+          password: hashedPassword,
           skillLevel: skillLevel,
         },
         (error, results) => {
@@ -266,30 +215,59 @@ exports.register = (req, res) => {
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
+  // Get password
   db.query(
-    "SELECT emailAddress, password FROM users WHERE emailAddress = ? AND password = ?",
-    [emailAddress, password],
+    "SELECT password FROM users WHERE emailAddress = ?",
+    [emailAddress],
     (error, results) => {
       if (error) {
         console.log(error);
       }
-      if (results.length === 1) {
-       
-       sendMailLogin(req.body.emailAddress);
-        return res.render("login", {
-          message: "Successfully logged in!",
-        });
-      } else {
-        return res.render("login", {
-          message: "This is the number of items ",
-        });
+      if (bcrypt.compareSync(password, results[0].password)) {
+        // Query DB to match an email and password
+        // If there is no match -> invalid login
+        db.query(
+          "SELECT * FROM users WHERE emailAddress = ? AND password = ?",
+          [emailAddress, results[0].password],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+            if (results.length === 1) {
+              sendMailLogin();
+              return res.render("editInfo", {
+                firstName: results[0].firstName,
+                lastName: results[0].lastName,
+                emailAddress: results[0].emailAddress,
+                phoneNumber: results[0].phoneNumber,
+                password: results[0].password,
+                skillLevel: results[0].skillLevel,
+                id: results[0].id,
+              });
+            } else {
+              return res.render("login", {
+                message: "Invalid login credentials",
+              });
+            }
+          }
+        );
       }
     }
   );
 };
 
-exports.test = (req, res) => {
-
-  sendWeeklyEmail();
-  
+exports.editInfo = (req, res) => {
+  console.log(req.body);
+  const {
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    password,
+    passwordConfirm,
+    skillLevel,
+    id,
+  } = req.body;
+  // Query into DB and UPDATE
+  return res.redirect("http://localhost:3304");
 };
