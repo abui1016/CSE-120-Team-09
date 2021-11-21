@@ -56,13 +56,7 @@ transporter.verify(function (error, success) {
 
 
 
-const optionsSettingChange = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer Login",
-  text: "A setting has changed.",
 
-};
 
 // Email functions
 function sendMailRegister(user) {
@@ -72,7 +66,7 @@ function sendMailRegister(user) {
   to:  user.emailAddress,
   subject: "EFM : Account Registered",
   text:
-    "Hello , " + user.firstName +"\"n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
+    "Hello , " + user.firstName +"\n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
   };
   
   transporter.sendMail(optionsRegister, function (err, info) {
@@ -102,7 +96,16 @@ function sendMailLogin(email) {
   });
 }
 
-function sendMailSettingChange() {
+function sendMailSettingChange(user) {
+
+  const optionsSettingChange = {
+    from: process.env.SES_FROM,
+    to: user.emailAddress,
+    subject: "Nodemailer Login",
+    text: "A setting has changed.",
+  
+  };
+
   transporter.sendMail(optionsSettingChange, function (err, info) {
     if (err) {
       console.log(err);
@@ -111,6 +114,30 @@ function sendMailSettingChange() {
     console.log("Sent: " + info.response);
   });
 }
+
+
+
+function sendActivities(user){
+
+  deliverable = {
+    from: process.env.SES_FROM,
+    to:  user.emailAddress,
+    subject: "EFM : Weekly Activity",
+    text:
+      "Hello , " + user.firstName +"\n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
+    };
+
+  transporter.sendMail(deliverable, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+
+}
+
+
 
 // Sample function to send out weekly emails
 // Get emails
@@ -266,5 +293,6 @@ exports.editInfo = (req, res) => {
     id,
   } = req.body;
   // Query into DB and UPDATE
+  sendMailSettingChange(req.body);
   return res.redirect("http://localhost:3304");
 };
