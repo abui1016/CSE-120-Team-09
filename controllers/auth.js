@@ -1,4 +1,5 @@
-// gets time for the timestamps.
+// Time function 
+
 function getTime() {
   const date = new Date();
   const myDate = new Date();
@@ -12,6 +13,9 @@ function getTime() {
   const myTime = hours + " " + ampm + " : " + minutes;
   return myTime;
 }
+
+
+
 
 // Import
 const mysql = require("mysql");
@@ -50,42 +54,27 @@ transporter.verify(function (error, success) {
   }
 });
 
-// Email Templates
-const optionsRegister = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "EFM : Account Registered",
-  text:
-    "Hello , " +
-    " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
-  attachments: [
-    {
-      path: "test.txt",
-    },
-  ],
-};
 
-const optionsLogin = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Early Family Math User Login",
-  text: "User has successfully logged in at " + ".",
-};
 
 const optionsSettingChange = {
   from: process.env.SES_FROM,
   to: process.env.SES_TO,
   subject: "Nodemailer Login",
-  text: "A user has successfully logged in at " + getTime(),
-  // attachments: [
-  //     {
-  //       path: 'directory/filename'
-  //     },
-  //   ],
+  text: "A setting has changed.",
+
 };
 
 // Email functions
-function sendMailRegister() {
+function sendMailRegister(user) {
+  console.log(user.emailAddress);
+  optionsRegister = {
+  from: process.env.SES_FROM,
+  to:  user.emailAddress,
+  subject: "EFM : Account Registered",
+  text:
+    "Hello , " + user.firstName +"\"n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
+  };
+  
   transporter.sendMail(optionsRegister, function (err, info) {
     if (err) {
       console.log(err);
@@ -95,8 +84,16 @@ function sendMailRegister() {
   });
 }
 
-function sendMailLogin() {
-  transporter.sendMail(optionsLogin, function (err, info) {
+function sendMailLogin(email) {
+    console.log(email);
+   optionsLogin = {
+    from: process.env.SES_FROM,
+    to: email,
+    subject: "Early Family Math User Login",
+    text: "A user has loggin to this account successfully at " + getTime() +".",
+   }; 
+
+  transporter.sendMail(optionsLogin , function (err, info) {
     if (err) {
       console.log(err);
       return;
@@ -200,7 +197,7 @@ exports.register = (req, res) => {
             console.log(error);
           } else {
             console.log(results);
-            sendMailRegister();
+            sendMailRegister(req.body);
             return res.render("register", {
               message: "User registered!",
             });
@@ -234,7 +231,7 @@ exports.login = (req, res) => {
               console.log(error);
             }
             if (results.length === 1) {
-              sendMailLogin();
+              sendMailLogin(req.body.emailAddress);
               return res.render("editInfo", {
                 firstName: results[0].firstName,
                 lastName: results[0].lastName,
