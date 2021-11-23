@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "alert": "^5.0.10",
     "aws-sdk": "^2.1007.0",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.5",
