@@ -94,7 +94,18 @@ const optionsActivities_3 = {
 };
 
 // Email functions
-function sendMailRegister() {
+function sendMailRegister(user) {
+  console.log(user.emailAddress);
+  optionsRegister = {
+    from: process.env.SES_FROM,
+    to: user.emailAddress,
+    subject: "EFM : Account Registered",
+    text:
+      "Hello , " +
+      user.firstName +
+      '"n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ',
+  };
+
   transporter.sendMail(optionsRegister, function (err, info) {
     if (err) {
       console.log(err);
