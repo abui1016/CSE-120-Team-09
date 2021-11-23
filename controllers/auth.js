@@ -256,7 +256,7 @@ exports.register = (req, res) => {
             console.log(error);
           } else {
             console.log(results);
-            sendMailRegister();
+            sendMailRegister(req.body);
             return res.render("register", {
               message: "User registered!",
             });
