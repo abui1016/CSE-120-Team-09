@@ -67,6 +67,7 @@ function sendMailRegister(user) {
   subject: "EFM : Account Registered",
   text:
     "Hello , " + user.firstName +"\n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
+  // attachments : "C:\Users\bomba\Desktop\CSE-120-Team-09\Activities\3-" + user.Activity + ".pdf"
   };
   
   transporter.sendMail(optionsRegister, function (err, info) {
