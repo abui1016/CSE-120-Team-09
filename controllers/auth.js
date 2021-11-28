@@ -19,7 +19,7 @@ const mysql = require("mysql");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const url = require("url");
-const alert = require("alert");
+
 
 const saltRounds = 10;
 
