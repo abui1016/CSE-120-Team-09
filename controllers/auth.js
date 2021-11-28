@@ -1,5 +1,4 @@
-// Time function 
-
+// gets time for the timestamps.
 function getTime() {
   const date = new Date();
   const myDate = new Date();
@@ -14,15 +13,13 @@ function getTime() {
   return myTime;
 }
 
-
-
-
 // Import
 const mysql = require("mysql");
 // const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const url = require("url");
+const alert = require("alert");
 
 const saltRounds = 10;
 
@@ -54,22 +51,61 @@ transporter.verify(function (error, success) {
   }
 });
 
+// Email Templates
+const optionsRegister = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "EFM : Account Registered",
+  text:
+    "Hello , " +
+    " User \n You are now registered user for Early Family Math if you wish to get started please follow the link to setup content delivery. We have also attached a form to this email that is a quick start guide to walk you through setup. ",
+  attachments: [
+    {
+      path: "test.txt",
+    },
+  ],
+};
 
+const optionsLogin = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Early Family Math User Login",
+  text: "User has successfully logged in at " + ".",
+};
 
+const optionsSettingChange = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "Nodemailer Login",
+  text: "A user has successfully logged in at " + getTime(),
+  // attachments: [
+  //     {
+  //       path: 'directory/filename'
+  //     },
+  //   ],
+};
 
+const optionsActivities_3 = {
+  from: process.env.SES_FROM,
+  to: process.env.SES_TO,
+  subject: "EFM Chapter 3 Activities",
+  text: "2 Daily activities from chapter 3",
+  attachments: [{ path: "Activities/3-1.pdf" }],
+};
 
 // Email functions
 function sendMailRegister(user) {
   console.log(user.emailAddress);
   optionsRegister = {
-  from: process.env.SES_FROM,
-  to:  user.emailAddress,
-  subject: "EFM : Account Registered",
-  text:
-    "Hello , " + user.firstName +"\n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
-  // attachments : "C:\Users\bomba\Desktop\CSE-120-Team-09\Activities\3-" + user.Activity + ".pdf"
+    from: process.env.SES_FROM,
+    to: user.emailAddress,
+    subject: "EFM : Account Registered",
+    text:
+      "Hello , " +
+      user.firstName +
+      '"n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ',
   };
-  
+
   transporter.sendMail(optionsRegister, function (err, info) {
     if (err) {
       console.log(err);
@@ -79,16 +115,8 @@ function sendMailRegister(user) {
   });
 }
 
-function sendMailLogin(email) {
-    console.log(email);
-   optionsLogin = {
-    from: process.env.SES_FROM,
-    to: email,
-    subject: "Early Family Math User Login",
-    text: "A user has loggin to this account successfully at " + getTime() +".",
-   }; 
-
-  transporter.sendMail(optionsLogin , function (err, info) {
+function sendMailLogin() {
+  transporter.sendMail(optionsLogin, function (err, info) {
     if (err) {
       console.log(err);
       return;
@@ -97,16 +125,7 @@ function sendMailLogin(email) {
   });
 }
 
-function sendMailSettingChange(user) {
-
-  const optionsSettingChange = {
-    from: process.env.SES_FROM,
-    to: user.emailAddress,
-    subject: "Nodemailer Login",
-    text: "A setting has changed.",
-  
-  };
-
+function sendMailSettingChange() {
   transporter.sendMail(optionsSettingChange, function (err, info) {
     if (err) {
       console.log(err);
@@ -116,46 +135,58 @@ function sendMailSettingChange(user) {
   });
 }
 
-
-
-function sendActivities(user){
-
-  deliverable = {
-    from: process.env.SES_FROM,
-    to:  user.emailAddress,
-    subject: "EFM : Weekly Activity",
-    text:
-      "Hello , " + user.firstName +"\n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
-    };
-
-  transporter.sendMail(deliverable, function (err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Sent: " + info.response);
-  });
-
-}
-
-
-
 // Sample function to send out weekly emails
 // Get emails
 // results is an array, i.e. results[0] is first email
 const oneDay = 86400000;
 const oneWeek = 604800000;
 function sendWeeklyEmail() {
-  db.query("SELECT email FROM users", (error, results) => {
+  db.query("SELECT emailAddress, skillLevel FROM users", (error, results) => {
     if (error) {
       console.log(error);
     }
-    for (let i = 0; i < results.length; i++) {
-      // send emails here
-      sendActivities(results);
-      console.log(results[i]);
-    }
+    sendActivities(results);
+    // for (let i = 0; i < results.length; i++) {
+    //   // send emails here
+    //   // console.log(results[i]);
+    // }
   });
+}
+
+function sendActivities(users) {
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].skillLevel === 3) {
+      transporter.sendMail(optionsActivities_3, function (err, info) {
+        if (err) {
+          console.log(err);
+        }
+        console.log("Sent: " + info.response);
+      });
+    }
+    // switch (users[i].skillLevel) {
+    //   case 1:
+    //     console.log("Send ch.1 Emails");
+    //     break;
+    //   case 2:
+    //     console.log("Send ch.2 Emails");
+    //     break;
+    //   case 3:
+    //     transporter.sendMail(optionsActivities_3, function (err, info) {
+    //       if (err) {
+    //         console.log(err);
+    //         return;
+    //       }
+    //       console.log("Sent: " + info.response);
+    //     });
+    //     break;
+    //   case 4:
+    //     console.log("Send ch.4 Emails");
+    //     break;
+    //   case 5:
+    //     console.log("Send ch.5 Emails");
+    //     break;
+    // }
+  }
 }
 
 // Set interval so function is called everytime after time expires
@@ -259,7 +290,8 @@ exports.login = (req, res) => {
               console.log(error);
             }
             if (results.length === 1) {
-              sendMailLogin(req.body.emailAddress);
+              sendMailLogin();
+              // sendWeeklyEmail();
               return res.render("editInfo", {
                 firstName: results[0].firstName,
                 lastName: results[0].lastName,
@@ -294,6 +326,45 @@ exports.editInfo = (req, res) => {
     id,
   } = req.body;
   // Query into DB and UPDATE
-  sendMailSettingChange(req.body);
-  return res.redirect("http://localhost:3304");
+  if (password === "" && passwordConfirm === "") {
+    db.query(
+      "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, skillLevel = ? WHERE id = ?",
+      [firstName, lastName, emailAddress, phoneNumber, skillLevel, id],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        }
+        return res.redirect("http://localhost:3304");
+      }
+    );
+  } else if (
+    password === passwordConfirm &&
+    password !== "" &&
+    passwordConfirm !== ""
+  ) {
+    const hashedPassword = bcrypt.hashSync(password, saltRounds);
+    db.query(
+      "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, password = ?, skillLevel = ? WHERE id = ?",
+      [
+        firstName,
+        lastName,
+        emailAddress,
+        phoneNumber,
+        hashedPassword,
+        skillLevel,
+        id,
+      ],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        }
+        return res.redirect("http://localhost:3304");
+      }
+    );
+  } else {
+    // Password and password confirm did not match
+    console.log("Passwords did not match");
+    alert("Passwords did not match");
+    return res.redirect("http://localhost:3304");
+  }
 };
