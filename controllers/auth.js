@@ -46,7 +46,7 @@ function sendMailRegister(user) {
     text:
       "Hello " +
       user.firstName +
-      ",\n You are now a registered user with Early Family Math. You will automatically receive daily emails with 2 activites for your child. If you feel that the pace is too slow or fast, you may log in to your account to adjust your child's skill level.",
+      ",\n You are now a registered user with Early Family Math. You will automatically receive daily emails with 2 activities for your child. If you feel that the pace is too slow or fast, you may log in to your account to adjust your child's skill level.",
   };
 
   transporter.sendMail(optionsRegister, function (err, info) {
@@ -132,9 +132,29 @@ function updateSkillLevel() {
   );
 }
 
+// Send activites daily
+// setInterval(sendActivities, oneDay);
+
+// Get skill level
+function getSkillLevel(id) {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT skillLevel from users WHERE id = ?",
+      [id],
+      (error, results) => {
+        if (error) {
+          return reject(err);
+        }
+        let skill = results[0].skillLevel;
+        resolve(skill);
+      }
+    );
+  });
+}
+
 // Register user to database Pushes the emails and the info to the DB.
 exports.register = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   //   const name = req.body.name;
   //   const email = req.body.email;
@@ -193,7 +213,7 @@ exports.register = (req, res) => {
           if (error) {
             console.log(error);
           } else {
-            console.log(results);
+            // console.log(results);
             sendMailRegister(req.body);
             alert("Sucessfully Registered!");
             return res.redirect("http://localhost:3304");
@@ -204,7 +224,8 @@ exports.register = (req, res) => {
   );
 };
 
-// Login user  Querey the DB for both email and login.
+// Login user
+// Query the DB for both email and password.
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
@@ -231,8 +252,6 @@ exports.login = (req, res) => {
               console.log(error);
             }
             if (results.length === 1) {
-              // sendMailLogin();
-              // sendWeeklyEmail();
               return res.render("editInfo", {
                 firstName: results[0].firstName,
                 lastName: results[0].lastName,
@@ -257,7 +276,7 @@ exports.login = (req, res) => {
 };
 
 exports.editInfo = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const {
     firstName,
     lastName,
@@ -269,47 +288,62 @@ exports.editInfo = (req, res) => {
     id,
   } = req.body;
   // Query into DB and UPDATE
-  if (password === "" && passwordConfirm === "") {
-    db.query(
-      "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, skillLevel = ? WHERE id = ?",
-      [firstName, lastName, emailAddress, phoneNumber, skillLevel, id],
-      (error, results) => {
-        if (error) {
-          console.log(error);
-        }
-        alert("Successfully updated information");
-        return res.redirect("http://localhost:3304");
+  // Reset activity level if user changes skill level
+  getSkillLevel(id).then((value) => {
+    const prevSkillLevel = value;
+    if (password === "" && passwordConfirm === "") {
+      if (prevSkillLevel !== skillLevel) {
+        db.query(
+          "UPDATE users SET activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
       }
-    );
-  } else if (
-    password === passwordConfirm &&
-    password !== "" &&
-    passwordConfirm !== ""
-  ) {
-    const hashedPassword = bcrypt.hashSync(password, saltRounds);
-    db.query(
-      "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, password = ?, skillLevel = ? WHERE id = ?",
-      [
-        firstName,
-        lastName,
-        emailAddress,
-        phoneNumber,
-        hashedPassword,
-        skillLevel,
-        id,
-      ],
-      (error, results) => {
-        if (error) {
-          console.log(error);
+      db.query(
+        "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, skillLevel = ? WHERE id = ?",
+        [firstName, lastName, emailAddress, phoneNumber, skillLevel, id],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+          }
+          alert("Successfully updated information");
+          return res.redirect("http://localhost:3304");
         }
-        alert("Successfully updated information");
-        return res.redirect("http://localhost:3304");
-      }
-    );
-  } else {
-    // Password and password confirm did not match
-    console.log("Passwords did not match");
-    alert("Passwords did not match");
-    return res.redirect("http://localhost:3304");
-  }
+      );
+    } else if (
+      password === passwordConfirm &&
+      password !== "" &&
+      passwordConfirm !== ""
+    ) {
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      db.query(
+        "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, password = ?, skillLevel = ? WHERE id = ?",
+        [
+          firstName,
+          lastName,
+          emailAddress,
+          phoneNumber,
+          hashedPassword,
+          skillLevel,
+          id,
+        ],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+          }
+          alert("Successfully updated information");
+          return res.redirect("http://localhost:3304");
+        }
+      );
+    } else {
+      // Password and password confirm did not match
+      console.log("Passwords did not match");
+      alert("Passwords did not match");
+      return res.redirect("http://localhost:3304");
+    }
+  });
 };
