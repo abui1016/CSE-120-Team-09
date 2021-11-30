@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const url = require("url");
 const alert = require("alert");
+const schedule = require("node-schedule");
 
 const saltRounds = 10;
 
@@ -36,6 +37,10 @@ transporter.verify(function (error, success) {
   }
 });
 
+// Send out daily activities
+// Sends out activity at every 45th minute of each hour when running
+const job = schedule.scheduleJob("45 * * * *", sendActivities);
+
 // Email functions
 function sendMailRegister(user) {
   // console.log(user.emailAddress);
@@ -57,9 +62,6 @@ function sendMailRegister(user) {
     console.log("Sent: " + info.response);
   });
 }
-
-const oneDay = 86400000;
-const oneWeek = 604800000;
 
 // Function to send out activities
 function sendActivities() {
@@ -131,9 +133,6 @@ function updateSkillLevel() {
     }
   );
 }
-
-// Send activites daily
-// setInterval(sendActivities, oneDay);
 
 // Get skill level
 function getSkillLevel(id) {
