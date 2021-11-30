@@ -82,9 +82,8 @@ function sendActivities() {
               path: `./Activities/${results[i].skillLevel}-${results[i].activityLevel}.pdf`,
             },
             {
-              path: `./Activities/${results[i].skillLevel}-${
-                results[i].activityLevel + 1
-              }.pdf`,
+              path: `./Activities/${results[i].skillLevel}-${results[i]
+                .activityLevel++}.pdf`,
             },
           ],
         };
