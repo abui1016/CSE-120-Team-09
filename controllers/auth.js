@@ -345,3 +345,136 @@ exports.editInfo = (req, res) => {
     }
   });
 };
+
+
+var codes = [100]; 
+for(var i = 0 ; i < 100 ; i++){
+  codes[i] = 0;
+ }
+var emails = [100];
+for(var i = 0 ; i < 100 ; i++){
+  emails[i] = 0;
+ }
+
+function storeCode(number,user){
+  for(var i = 0 ; i < 100 ; i++){
+    if(codes[i] == "0"){
+      codes[i] = number;
+      emails[i] = user;
+    }
+  }
+}
+
+
+function randomNumber(min, max, email) {  
+
+  var number2FA  = Math.floor(
+    Math.random() * (max - min + 1) + min
+  );
+
+  storeCode(number2FA,email);
+
+  optionsLogin = {
+    from: process.env.SES_FROM,
+    to: email,
+    subject: "Early Family Math Email Recovery",
+    text: "Your Access code it : "+ number2FA +".",
+   }; 
+
+   transporter.sendMail(optionsLogin , function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
+  });
+
+
+}
+
+
+
+exports.recovery = (req, res) => { 
+   const { emailAddress } = req.body;
+
+// Get password
+db.query(
+  "SELECT emailAddress FROM users WHERE emailAddress = ?",
+  [emailAddress],
+  (error, results) => {
+    if (error) {
+      console.log(error);
+    }
+
+    // If it gets a result from the DB that matches at all then it will send out the prompt
+
+    if (results.length > 0) {
+      alert("An email has been sent with a recovery code.");
+      randomNumber(100000, 999999,req.body.emailAddress);
+     
+      return res.redirect("http://localhost:3304/recoveryInput");
+      // Authenticates Passwords
+    } else{
+      alert("No email is associated with this account");
+      return res.redirect("http://localhost:3304/recovery");
+    }
+});
+}
+
+function checkCode(input){
+    for(var i = 0 ; i < 100 ; i++){
+      if(codes[i] == input){
+          return i;
+      }
+    } return -1;
+
+  }
+
+
+exports.recoveryInput = (req, res) => { 
+  const { code } = req.body;
+
+  var check = -1;
+    for(var i = 0 ; i < 100 ; i++){
+      if(codes[i] == req.body.code){
+        check = i;
+    }
+  }
+
+  if(check == -1 ){
+    alert("The code you entered is not a valid code.");
+    return res.redirect("http://localhost:3304/recoveryInput");
+  }else{
+    db.query(
+      "SELECT emailAddress FROM users WHERE emailAddress = ?",
+      [emails[check]],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        }
+        if (results.length === 1) {
+          return res.render("editInfo", {
+            firstName: results[0].firstName,
+            lastName: results[0].lastName,
+            emailAddress: results[0].emailAddress,
+            phoneNumber: results[0].phoneNumber,
+            password: results[0].password,
+            skillLevel: results[0].skillLevel,
+            id: results[0].id,
+          });
+
+      }});
+
+      codes[check]== 0;
+      emails[check] == 0; 
+}
+}
+
+
+exports.test = (req, res) => { 
+  const { code } = req.body;
+
+  var check = checkCode(req.body.code);
+  console.log(check + "Check ");
+  console.log(codes[0]) + "Codes";
+}

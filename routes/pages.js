@@ -20,4 +20,17 @@ router.get("/editInfo", (req, res) => {
   res.render("editInfo");
 });
 
+router.get("/recovery", (req, res) => {
+  res.render("recovery");
+});
+
+router.get("/recoveryInput", (req, res) => {
+  res.render("recoveryInput");
+});
+
+router.get("/test", (req, res) => {
+  res.render("test");
+});
+
+
 module.exports = router;
