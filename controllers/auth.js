@@ -421,14 +421,6 @@ db.query(
 });
 }
 
-function checkCode(input){
-    for(var i = 0 ; i < 100 ; i++){
-      if(codes[i] == input){
-          return i;
-      }
-    } return -1;
-
-  }
 
 
 exports.recoveryInput = (req, res) => { 
@@ -445,13 +437,15 @@ exports.recoveryInput = (req, res) => {
     alert("The code you entered is not a valid code.");
     return res.redirect("http://localhost:3304/recoveryInput");
   }else{
+
     db.query(
-      "SELECT emailAddress FROM users WHERE emailAddress = ?",
+      "SELECT * FROM users WHERE emailAddress = ?",
       [emails[check]],
       (error, results) => {
         if (error) {
           console.log(error);
         }
+        console.log(results[0]);
         if (results.length === 1) {
           return res.render("editInfo", {
             firstName: results[0].firstName,
@@ -463,7 +457,8 @@ exports.recoveryInput = (req, res) => {
             id: results[0].id,
           });
 
-      }});
+      }
+      });
 
       codes[check]== 0;
       emails[check] == 0; 
