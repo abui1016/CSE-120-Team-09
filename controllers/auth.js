@@ -72,6 +72,11 @@ function sendActivities() {
         console.log(error);
       }
       for (let i = 0; i < results.length; i++) {
+        if (results[i].activityLevel >= 13) {
+          updateSkillLevel(results[i].id);
+          console.log("CONTINUING");
+          continue;
+        }
         const optionsActivities = {
           from: process.env.SES_FROM,
           to: results[i].emailAddress,
@@ -82,8 +87,8 @@ function sendActivities() {
               path: `./Activities/${results[i].skillLevel}-${results[i].activityLevel}.pdf`,
             },
             {
-              path: `./Activities/${results[i].skillLevel}-${results[i]
-                .activityLevel++}.pdf`,
+              path: `./Activities/${results[i].skillLevel}-${++results[i]
+                .activityLevel}.pdf`,
             },
           ],
         };
@@ -94,40 +99,41 @@ function sendActivities() {
           }
           console.log("Sent Activities!");
         });
+        updateSkillLevel(results[i].id);
       }
     }
   );
-  updateSkillLevel();
 }
 
 // Function to update skill and activity levels
-function updateSkillLevel() {
+function updateSkillLevel(id) {
   db.query(
-    "SELECT * FROM users WHERE subscribed = 'TRUE' ",
+    "SELECT * FROM users WHERE subscribed = 'TRUE' AND id = ?",
+    [id],
     (error, results) => {
       if (error) {
         console.log(error);
       }
-      for (let i = 0; i < results.length; i++) {
-        if (results[i].activityLevel >= 13) {
-          db.query(
-            "UPDATE users SET skillLevel = skillLevel + 1, activityLevel = 1 ",
-            (error, results) => {
-              if (error) {
-                console.log(error);
-              }
+      if (results[0].activityLevel >= 13) {
+        db.query(
+          "UPDATE users SET skillLevel = skillLevel + 1, activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
             }
-          );
-        } else {
-          db.query(
-            "UPDATE users SET activityLevel = activityLevel + 2",
-            (error, results) => {
-              if (error) {
-                console.log(error);
-              }
+          }
+        );
+      } else {
+        db.query(
+          "UPDATE users SET activityLevel = activityLevel + 2 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
             }
-          );
-        }
+          }
+        );
       }
     }
   );
@@ -147,6 +153,46 @@ function getSkillLevel(id) {
         resolve(skill);
       }
     );
+  });
+}
+
+// Recover password
+const codes = [100];
+for (let i = 0; i < 100; i++) {
+  codes[i] = 0;
+}
+const emails = [100];
+for (let i = 0; i < 100; i++) {
+  emails[i] = 0;
+}
+
+function storeCode(number, user) {
+  for (let i = 0; i < 100; i++) {
+    if (codes[i] == "0") {
+      codes[i] = number;
+      emails[i] = user;
+    }
+  }
+}
+
+function randomNumber(min, max, email) {
+  const number2FA = Math.floor(Math.random() * (max - min + 1) + min);
+
+  storeCode(number2FA, email);
+
+  optionsLogin = {
+    from: process.env.SES_FROM,
+    to: email,
+    subject: "Early Family Math Email Recovery",
+    text: "Your Access code is: " + number2FA,
+  };
+
+  transporter.sendMail(optionsLogin, function (err, info) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log("Sent: " + info.response);
   });
 }
 
@@ -344,4 +390,73 @@ exports.editInfo = (req, res) => {
       return res.redirect("http://localhost:3304");
     }
   });
+};
+
+exports.recovery = (req, res) => {
+  const { emailAddress } = req.body;
+
+  // Get password
+  db.query(
+    "SELECT emailAddress FROM users WHERE emailAddress = ?",
+    [emailAddress],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+      }
+
+      // If it gets a result from the DB that matches at all then it will send out the prompt
+
+      if (results.length > 0) {
+        alert("An email has been sent with a recovery code.");
+        randomNumber(100000, 999999, req.body.emailAddress);
+
+        return res.redirect("http://localhost:3304/recoveryInput");
+        // Authenticates Passwords
+      } else {
+        alert("No email is associated with this account");
+        return res.redirect("http://localhost:3304/recovery");
+      }
+    }
+  );
+};
+
+exports.recoveryInput = (req, res) => {
+  const { code } = req.body;
+
+  let check = -1;
+  for (let i = 0; i < 100; i++) {
+    if (codes[i] == req.body.code) {
+      check = i;
+    }
+  }
+
+  if (check == -1) {
+    alert("The code you entered is not a valid code.");
+    return res.redirect("http://localhost:3304/recoveryInput");
+  } else {
+    db.query(
+      "SELECT * FROM users WHERE emailAddress = ?",
+      [emails[check]],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        }
+        console.log(results[0]);
+        if (results.length === 1) {
+          return res.render("editInfo", {
+            firstName: results[0].firstName,
+            lastName: results[0].lastName,
+            emailAddress: results[0].emailAddress,
+            phoneNumber: results[0].phoneNumber,
+            password: results[0].password,
+            skillLevel: results[0].skillLevel,
+            id: results[0].id,
+          });
+        }
+      }
+    );
+
+    codes[check] == 0;
+    emails[check] == 0;
+  }
 };

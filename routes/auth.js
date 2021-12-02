@@ -13,4 +13,9 @@ router.post("/login", authController.login);
 // Editing info
 router.post("/editInfo", authController.editInfo);
 
+// Password recovery
+router.post("/recovery", authController.recovery);
+
+router.post("/recoveryInput", authController.recoveryInput);
+
 module.exports = router;
