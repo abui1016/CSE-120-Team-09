@@ -74,7 +74,7 @@ function sendActivities() {
       for (let i = 0; i < results.length; i++) {
         if (results[i].activityLevel >= 13) {
           updateSkillLevel(results[i].id);
-          console.log("CONTINUING");
+          // console.log("CONTINUING");
           continue;
         }
         const optionsActivities = {
