@@ -139,6 +139,8 @@ function updateSkillLevel(id) {
   );
 }
 
+// sendActivities();
+
 // Get skill level
 function getSkillLevel(id) {
   return new Promise((resolve, reject) => {
@@ -364,6 +366,17 @@ exports.editInfo = (req, res) => {
       passwordConfirm !== ""
     ) {
       const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      if (prevSkillLevel !== skillLevel) {
+        db.query(
+          "UPDATE users SET activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
+      }
       db.query(
         "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, password = ?, skillLevel = ? WHERE id = ?",
         [
@@ -441,7 +454,7 @@ exports.recoveryInput = (req, res) => {
         if (error) {
           console.log(error);
         }
-        console.log(results[0]);
+        // console.log(results[0]);
         if (results.length === 1) {
           return res.render("editInfo", {
             firstName: results[0].firstName,
@@ -456,7 +469,7 @@ exports.recoveryInput = (req, res) => {
       }
     );
 
-    codes[check] == 0;
-    emails[check] == 0;
+    codes[check] = 0;
+    emails[check] = 0;
   }
 };
