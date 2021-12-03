@@ -1,28 +1,11 @@
-// Time function 
-
-function getTime() {
-  const date = new Date();
-  const myDate = new Date();
-  // get hour value.
-  let hours = myDate.getHours();
-  const ampm = hours >= 12 ? "Pm" : "Am";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  let minutes = myDate.getMinutes();
-  minutes = minutes < 10 ? "0" + minutes : minutes;
-  const myTime = hours + " " + ampm + " : " + minutes;
-  return myTime;
-}
-
-
-
-
 // Import
 const mysql = require("mysql");
 // const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const url = require("url");
+const alert = require("alert");
+const schedule = require("node-schedule");
 
 const saltRounds = 10;
 
@@ -54,27 +37,23 @@ transporter.verify(function (error, success) {
   }
 });
 
-
-
-const optionsSettingChange = {
-  from: process.env.SES_FROM,
-  to: process.env.SES_TO,
-  subject: "Nodemailer Login",
-  text: "A setting has changed.",
-
-};
+// Send out daily activities
+// Sends out activity at every 45th minute of each hour when running
+const job = schedule.scheduleJob("45 * * * *", sendActivities);
 
 // Email functions
 function sendMailRegister(user) {
-  console.log(user.emailAddress);
+  // console.log(user.emailAddress);
   optionsRegister = {
-  from: process.env.SES_FROM,
-  to:  user.emailAddress,
-  subject: "EFM : Account Registered",
-  text:
-    "Hello , " + user.firstName +"\"n You are now a registered user with Early Family Math. If you wish to get started please login to the Early Fmaily Math portal. Once logged in you may begin setup for conetnt delivery. ",
+    from: process.env.SES_FROM,
+    to: user.emailAddress,
+    subject: "EFM : Account Registered",
+    text:
+      "Hello " +
+      user.firstName +
+      ",\n You are now a registered user with Early Family Math. You will automatically receive daily emails with 2 activities for your child. If you feel that the pace is too slow or fast, you may log in to your account to adjust your child's skill level.",
   };
-  
+
   transporter.sendMail(optionsRegister, function (err, info) {
     if (err) {
       console.log(err);
@@ -84,16 +63,133 @@ function sendMailRegister(user) {
   });
 }
 
-function sendMailLogin(email) {
-    console.log(email);
-   optionsLogin = {
+// Function to send out activities
+function sendActivities() {
+  db.query(
+    "SELECT * FROM users WHERE subscribed = 'TRUE'",
+    (error, results) => {
+      if (error) {
+        console.log(error);
+      }
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].activityLevel >= 13) {
+          updateSkillLevel(results[i].id);
+          // console.log("CONTINUING");
+          continue;
+        }
+        const optionsActivities = {
+          from: process.env.SES_FROM,
+          to: results[i].emailAddress,
+          subject: "EFM Daily Activity",
+          text: `Hello ${results[i].firstName} \nHere are two daily activities based on your child's skill level (${results[i].skillLevel})!`,
+          attachments: [
+            {
+              path: `./Activities/${results[i].skillLevel}-${results[i].activityLevel}.pdf`,
+            },
+            {
+              path: `./Activities/${results[i].skillLevel}-${++results[i]
+                .activityLevel}.pdf`,
+            },
+          ],
+        };
+        transporter.sendMail(optionsActivities, function (err, info) {
+          if (err) {
+            console.log(err);
+            return;
+          }
+          console.log("Sent Activities!");
+        });
+        updateSkillLevel(results[i].id);
+      }
+    }
+  );
+}
+
+// Function to update skill and activity levels
+function updateSkillLevel(id) {
+  db.query(
+    "SELECT * FROM users WHERE subscribed = 'TRUE' AND id = ?",
+    [id],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+      }
+      if (results[0].activityLevel >= 13) {
+        db.query(
+          "UPDATE users SET skillLevel = skillLevel + 1, activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
+      } else {
+        db.query(
+          "UPDATE users SET activityLevel = activityLevel + 2 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
+      }
+    }
+  );
+}
+
+// sendActivities();
+
+// Get skill level
+function getSkillLevel(id) {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT skillLevel from users WHERE id = ?",
+      [id],
+      (error, results) => {
+        if (error) {
+          return reject(err);
+        }
+        let skill = results[0].skillLevel;
+        resolve(skill);
+      }
+    );
+  });
+}
+
+// Recover password
+const codes = [100];
+for (let i = 0; i < 100; i++) {
+  codes[i] = 0;
+}
+const emails = [100];
+for (let i = 0; i < 100; i++) {
+  emails[i] = 0;
+}
+
+function storeCode(number, user) {
+  for (let i = 0; i < 100; i++) {
+    if (codes[i] == "0") {
+      codes[i] = number;
+      emails[i] = user;
+    }
+  }
+}
+
+function randomNumber(min, max, email) {
+  const number2FA = Math.floor(Math.random() * (max - min + 1) + min);
+
+  storeCode(number2FA, email);
+
+  optionsLogin = {
     from: process.env.SES_FROM,
     to: email,
-    subject: "Early Family Math User Login",
-    text: "A user has loggin to this account successfully at " + getTime() +".",
-   }; 
+    subject: "Early Family Math Email Recovery",
+    text: "Your Access code is: " + number2FA,
+  };
 
-  transporter.sendMail(optionsLogin , function (err, info) {
+  transporter.sendMail(optionsLogin, function (err, info) {
     if (err) {
       console.log(err);
       return;
@@ -101,41 +197,10 @@ function sendMailLogin(email) {
     console.log("Sent: " + info.response);
   });
 }
-
-function sendMailSettingChange() {
-  transporter.sendMail(optionsSettingChange, function (err, info) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Sent: " + info.response);
-  });
-}
-
-// Sample function to send out weekly emails
-// Get emails
-// results is an array, i.e. results[0] is first email
-const oneDay = 86400000;
-const oneWeek = 604800000;
-function sendWeeklyEmail() {
-  db.query("SELECT email FROM users", (error, results) => {
-    if (error) {
-      console.log(error);
-    }
-    for (let i = 0; i < results.length; i++) {
-      // send emails here
-      sendActivities(results);
-      console.log(results[i]);
-    }
-  });
-}
-
-// Set interval so function is called everytime after time expires
-// setInterval(sendWeeklyEmail, 10000);
 
 // Register user to database Pushes the emails and the info to the DB.
 exports.register = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   //   const name = req.body.name;
   //   const email = req.body.email;
@@ -165,14 +230,12 @@ exports.register = (req, res) => {
       // If it gets a result from the DB that matches at all then it will send out the prompt
 
       if (results.length > 0) {
-        return res.render("register", {
-          message: "That email is already in use",
-        });
+        alert("That email is already in use");
+        return res.redirect("http://localhost:3304/register");
         // Authenticates Passwords
       } else if (password !== passwordConfirm) {
-        return res.render("register", {
-          message: "Passwords do not match",
-        });
+        alert("Passwords did not match");
+        return res.redirect("http://localhost:3304/register");
       }
       // let hashedPassword = await bcrypt.hash(password, 8)
       // console.log(hashedPassword);
@@ -196,11 +259,10 @@ exports.register = (req, res) => {
           if (error) {
             console.log(error);
           } else {
-            console.log(results);
+            // console.log(results);
             sendMailRegister(req.body);
-            return res.render("register", {
-              message: "User registered!",
-            });
+            alert("Sucessfully Registered!");
+            return res.redirect("http://localhost:3304");
           }
         }
       );
@@ -208,7 +270,8 @@ exports.register = (req, res) => {
   );
 };
 
-// Login user  Querey the DB for both email and login.
+// Login user
+// Query the DB for both email and password.
 exports.login = (req, res) => {
   const { emailAddress, password } = req.body;
 
@@ -219,6 +282,10 @@ exports.login = (req, res) => {
     (error, results) => {
       if (error) {
         console.log(error);
+      }
+      if (results.length === 0) {
+        alert("Invalid Login Credentials");
+        return res.redirect("http://localhost:3304/login");
       }
       if (bcrypt.compareSync(password, results[0].password)) {
         // Query DB to match an email and password
@@ -231,7 +298,6 @@ exports.login = (req, res) => {
               console.log(error);
             }
             if (results.length === 1) {
-              sendMailLogin(req.body.emailAddress);
               return res.render("editInfo", {
                 firstName: results[0].firstName,
                 lastName: results[0].lastName,
@@ -242,19 +308,21 @@ exports.login = (req, res) => {
                 id: results[0].id,
               });
             } else {
-              return res.render("login", {
-                message: "Invalid login credentials",
-              });
+              alert("Invalid Login Credentials");
+              return res.redirect("http://localhost:3304/login");
             }
           }
         );
+      } else {
+        alert("Invalid Login Credentials");
+        return res.redirect("http://localhost:3304/login");
       }
     }
   );
 };
 
 exports.editInfo = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const {
     firstName,
     lastName,
@@ -266,5 +334,142 @@ exports.editInfo = (req, res) => {
     id,
   } = req.body;
   // Query into DB and UPDATE
-  return res.redirect("http://localhost:3304");
+  // Reset activity level if user changes skill level
+  getSkillLevel(id).then((value) => {
+    const prevSkillLevel = value;
+    if (password === "" && passwordConfirm === "") {
+      if (prevSkillLevel !== skillLevel) {
+        db.query(
+          "UPDATE users SET activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
+      }
+      db.query(
+        "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, skillLevel = ? WHERE id = ?",
+        [firstName, lastName, emailAddress, phoneNumber, skillLevel, id],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+          }
+          alert("Successfully updated information");
+          return res.redirect("http://localhost:3304");
+        }
+      );
+    } else if (
+      password === passwordConfirm &&
+      password !== "" &&
+      passwordConfirm !== ""
+    ) {
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
+      if (prevSkillLevel !== skillLevel) {
+        db.query(
+          "UPDATE users SET activityLevel = 1 WHERE id = ?",
+          [id],
+          (error, results) => {
+            if (error) {
+              console.log(error);
+            }
+          }
+        );
+      }
+      db.query(
+        "UPDATE users SET firstName = ?, lastName = ?, emailAddress = ?, phoneNumber = ?, password = ?, skillLevel = ? WHERE id = ?",
+        [
+          firstName,
+          lastName,
+          emailAddress,
+          phoneNumber,
+          hashedPassword,
+          skillLevel,
+          id,
+        ],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+          }
+          alert("Successfully updated information");
+          return res.redirect("http://localhost:3304");
+        }
+      );
+    } else {
+      // Password and password confirm did not match
+      console.log("Passwords did not match");
+      alert("Passwords did not match");
+      return res.redirect("http://localhost:3304");
+    }
+  });
+};
+
+exports.recovery = (req, res) => {
+  const { emailAddress } = req.body;
+
+  // Get password
+  db.query(
+    "SELECT emailAddress FROM users WHERE emailAddress = ?",
+    [emailAddress],
+    (error, results) => {
+      if (error) {
+        console.log(error);
+      }
+
+      // If it gets a result from the DB that matches at all then it will send out the prompt
+
+      if (results.length > 0) {
+        alert("An email has been sent with a recovery code.");
+        randomNumber(100000, 999999, req.body.emailAddress);
+
+        return res.redirect("http://localhost:3304/recoveryInput");
+        // Authenticates Passwords
+      } else {
+        alert("No email is associated with this account");
+        return res.redirect("http://localhost:3304/recovery");
+      }
+    }
+  );
+};
+
+exports.recoveryInput = (req, res) => {
+  const { code } = req.body;
+
+  let check = -1;
+  for (let i = 0; i < 100; i++) {
+    if (codes[i] == req.body.code) {
+      check = i;
+    }
+  }
+
+  if (check == -1) {
+    alert("The code you entered is not a valid code.");
+    return res.redirect("http://localhost:3304/recoveryInput");
+  } else {
+    db.query(
+      "SELECT * FROM users WHERE emailAddress = ?",
+      [emails[check]],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        }
+        // console.log(results[0]);
+        if (results.length === 1) {
+          return res.render("editInfo", {
+            firstName: results[0].firstName,
+            lastName: results[0].lastName,
+            emailAddress: results[0].emailAddress,
+            phoneNumber: results[0].phoneNumber,
+            password: results[0].password,
+            skillLevel: results[0].skillLevel,
+            id: results[0].id,
+          });
+        }
+      }
+    );
+
+    codes[check] = 0;
+    emails[check] = 0;
+  }
 };
